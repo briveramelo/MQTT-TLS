@@ -84,6 +84,10 @@ sample code bearing this copyright.
 #define MQTT_MAX_PACKET_SIZE 255
 #endif
 
+#if MQTT_MAX_PACKET_SIZE > 16384
+#error "mqtt max packet size is above the ssl max content size limit"
+#endif
+
 // MQTT_KEEPALIVE : keepAlive interval in Seconds
 #define MQTT_DEFAULT_KEEPALIVE 15
 
