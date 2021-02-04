@@ -80,7 +80,13 @@ sample code bearing this copyright.
 
 // MQTT_MAX_PACKET_SIZE : Maximum packet size
 // this size is total of [MQTT Header(Max:5byte) + Topic Name Length + Topic Name + Message ID(QoS1|2) + Payload]
+#ifndef MQTT_MAX_PACKET_SIZE
 #define MQTT_MAX_PACKET_SIZE 255
+#endif
+
+#if MQTT_MAX_PACKET_SIZE > 16384
+#error "mqtt max packet size is above the ssl max content size limit"
+#endif
 
 // MQTT_KEEPALIVE : keepAlive interval in Seconds
 #define MQTT_DEFAULT_KEEPALIVE 15
@@ -118,7 +124,6 @@ typedef enum{
 private:
     TCPClient tcpClient;
 
-    uint8_t *buffer = NULL;
     uint16_t nextMsgId;
     unsigned long lastOutActivity;
     unsigned long lastInActivity;
@@ -133,9 +138,10 @@ private:
     uint8_t *ip = NULL;
     uint16_t port;
     int keepalive;
-    uint16_t maxpacketsize;
+    const uint16_t maxpacketsize = MQTT_MAX_PACKET_SIZE;
+    uint8_t buffer[MQTT_MAX_PACKET_SIZE];
 
-    void initialize(char* domain, uint8_t *ip, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize);
+    void initialize(char* domain, uint8_t *ip, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int));
     uint16_t netWrite(unsigned char *buff, int length);
     bool available();
 
@@ -169,13 +175,9 @@ public:
     MQTT();
 
     MQTT(char* domain, uint16_t port, void (*callback)(char*,uint8_t*,unsigned int));
-    MQTT(char* domain, uint16_t port, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize);
     MQTT(char* domain, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int));
-    MQTT(char* domain, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize);
     MQTT(uint8_t *, uint16_t port, void (*callback)(char*,uint8_t*,unsigned int));
-    MQTT(uint8_t *, uint16_t port, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize);
     MQTT(uint8_t *, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int));
-    MQTT(uint8_t *, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize);
     ~MQTT();
 
     bool connect(const char *);
@@ -200,8 +202,6 @@ public:
     bool unsubscribe(const char *);
     bool loop();
     bool isConnected();
-
-    void setMaxPacketSize(int maxpacketsize);
 
     /* TLS */
     bool enableVerify = true;

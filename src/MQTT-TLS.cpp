@@ -16,44 +16,28 @@ MQTT::MQTT() {
 }
 
 MQTT::MQTT(char* domain, uint16_t port, void (*callback)(char*,uint8_t*,unsigned int)) {
-    this->initialize(domain, NULL, port, MQTT_DEFAULT_KEEPALIVE, callback, MQTT_MAX_PACKET_SIZE);
-}
-
-MQTT::MQTT(char* domain, uint16_t port, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize) {
-    this->initialize(domain, NULL, port, MQTT_DEFAULT_KEEPALIVE, callback, maxpacketsize);
+    this->initialize(domain, NULL, port, MQTT_DEFAULT_KEEPALIVE, callback);
 }
 
 MQTT::MQTT(char* domain, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int)) {
-    this->initialize(domain, NULL, port, keepalive, callback, MQTT_MAX_PACKET_SIZE);
-}
-
-MQTT::MQTT(char* domain, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize) {
-    this->initialize(domain, NULL, port, keepalive, callback, maxpacketsize);
+    this->initialize(domain, NULL, port, keepalive, callback);
 }
 
 MQTT::MQTT(uint8_t *ip, uint16_t port, void (*callback)(char*,uint8_t*,unsigned int)) {
-    this->initialize(NULL, ip, port, MQTT_DEFAULT_KEEPALIVE, callback, MQTT_MAX_PACKET_SIZE);
+    this->initialize(NULL, ip, port, MQTT_DEFAULT_KEEPALIVE, callback);
 }
 
-MQTT::MQTT(uint8_t *ip, uint16_t port, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize) {
-    this->initialize(NULL, ip, port, MQTT_DEFAULT_KEEPALIVE, callback, maxpacketsize);
-}
 MQTT::MQTT(uint8_t *ip, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int)) {
-    this->initialize(NULL, ip, port, keepalive, callback, MQTT_MAX_PACKET_SIZE);
-}
-
-MQTT::MQTT(uint8_t *ip, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize) {
-    this->initialize(NULL, ip, port, keepalive, callback, maxpacketsize);
+    this->initialize(NULL, ip, port, keepalive, callback);
 }
 
 MQTT::~MQTT() {
     if (isConnected()) {
         disconnect();
-        free(buffer);
     }
 }
 
-void MQTT::initialize(char* domain, uint8_t *ip, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int), int maxpacketsize) {
+void MQTT::initialize(char* domain, uint8_t *ip, uint16_t port, int keepalive, void (*callback)(char*,uint8_t*,unsigned int)) {
     this->callback = callback;
     this->tls = false;
     this->tlsConnected = false;
@@ -64,11 +48,6 @@ void MQTT::initialize(char* domain, uint8_t *ip, uint16_t port, int keepalive, v
         this->domain = domain;
     this->port = port;
     this->keepalive = keepalive;
-
-    this->maxpacketsize = maxpacketsize;
-    if (buffer != NULL)
-      delete[] buffer;
-    buffer = new uint8_t[this->maxpacketsize];
 }
 
 
@@ -574,13 +553,6 @@ bool MQTT::isConnected() {
     if (rc && tls)
         return tlsConnected;
     return rc;
-}
-
-void MQTT::setMaxPacketSize(int maxpacketsize) {
-    this->maxpacketsize = maxpacketsize;
-    if (buffer != NULL)
-      delete[] buffer;
-    buffer = new uint8_t[this->maxpacketsize];
 }
 
 bool MQTT::available() {
